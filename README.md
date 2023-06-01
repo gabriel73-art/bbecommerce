@@ -1,8 +1,8 @@
 # **bbecommerce:Backend Java para Ecommerce**
 
-##Ejemplo básico con Autenticacion, Roles, Configuración de CORS para el backend de una tienda desarrollada en Spring Boot
+## Ejemplo básico con Autenticacion, Roles, Configuración de CORS para el backend de una tienda desarrollada en Spring Boot
 
-###Puntos a tener en cuenta:
+### Puntos a tener en cuenta:
 
 1. Como Gestor de Base de Datos se escogió Postgresql. Para desplegarlo localmente ir al application.properties y modificar el usuario y la contraseña
 2. Una vez ya corriendo el servidor en el puerto 8080 ir a la tabla Role en la base de datos y agregar los valores: ROLE_ADMIN, ROLE_EDITOR,ROLE_USER con sus respectivos id.

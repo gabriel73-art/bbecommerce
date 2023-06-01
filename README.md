@@ -1,6 +1,4 @@
-# bbecommerce
-Titulo: Backend Java para Ecommerce
-
+# bbecommerce:Backend Java para Ecommerce
 
 Ejemplo básico con Autenticacion, Roles, Configuración de CORS para el backend de una tienda desarrollada en Spring Boot
 

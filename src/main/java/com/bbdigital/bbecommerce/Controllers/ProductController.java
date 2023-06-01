@@ -1,6 +1,7 @@
 package com.bbdigital.bbecommerce.Controllers;
 
 import com.bbdigital.bbecommerce.Models.Product;
+import com.bbdigital.bbecommerce.Repositories.ProductRepository;
 import com.bbdigital.bbecommerce.Services.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,6 +32,8 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+    @Autowired
+    ProductRepository productRepository;
 
 
     @CrossOrigin
@@ -87,75 +91,52 @@ public class ProductController {
         return ResponseEntity.ok(Boolean.TRUE);
     }
 
-    /*@GetMapping("/all_productos")
-    public ResponseEntity<Page<Product>> pagination(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String order,
-            @RequestParam(defaultValue = "true") boolean asc
-    )
-    {
-        Page<Product> products = productService.pagination(PageRequest.of(page, size, Sort.by(order)));
-        if(!asc)
-            products = productService.pagination(PageRequest.of(page, size, Sort.by(order).descending()));
-        return new ResponseEntity<Page<Product>>(products, HttpStatus.OK);
-    }*/
-    /*@GetMapping("/admin/all_productos")
-    public ResponseEntity<Page<Product>> adminPagination(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String order,
-            @RequestParam(defaultValue = "true") boolean asc
-    )
-    {
-        Page<Product> products = productService.allPagination(PageRequest.of(page, size, Sort.by(order)));
-        if(!asc)
-            products = productService.pagination(PageRequest.of(page, size, Sort.by(order).descending()));
-        return new ResponseEntity<Page<Product>>(products, HttpStatus.OK);
-    }*/
-    @CrossOrigin
+
     @GetMapping("/search")
-    public ResponseEntity<Page<Product>> search(
+    public ResponseEntity<Page<Product>> buscarProductos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String details,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String order,
-            @RequestParam(defaultValue = "true") boolean asc,
-            @RequestParam(defaultValue="",required = false) String name,
-            @RequestParam(defaultValue="",required = false) String category
-    )
-    {
-        if(!name.isEmpty()||!category.isEmpty()){
-            name=name.toUpperCase();
-            category=category.toUpperCase();
-            Page<Product> products = productService.paginationSearch(name,category,PageRequest.of(page, size, Sort.by(order)));
-            if(!asc)
-                products = productService.paginationSearch(name,category, PageRequest.of(page, size, Sort.by(order).descending()));
-            return new ResponseEntity<>(products, HttpStatus.OK);
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (name != null && category != null && description != null && details != null) {
+            return new ResponseEntity<>(productRepository.findByNameContainingAndCategoryContainingAndDescriptionContainingAndDetailsContaining(name, category,description,details, pageable),HttpStatus.OK);
+        } else if (name != null) {
+            return new ResponseEntity<>(productRepository.findByNameContaining(name, pageable),HttpStatus.OK);
+        } else if (category != null) {
+            return new ResponseEntity<>(productRepository.findByCategoryContaining(category, pageable),HttpStatus.OK);
+        } else if (description != null) {
+            return new ResponseEntity<>(productRepository.findByDescriptionContaining(description, pageable),HttpStatus.OK);
+        } else if (details != null) {
+            return new ResponseEntity<>(productRepository.findByDetailsContaining(details, pageable),HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(productRepository.findAll(pageable),HttpStatus.OK);
         }
-        else if(!name.isEmpty()&&!category.isEmpty()){
-            Page<Product> products = productService.allPagination(PageRequest.of(page, size, Sort.by(order)));
-            if(!asc)
-                products = productService.pagination(PageRequest.of(page, size, Sort.by(order).descending()));
-            return new ResponseEntity<>(products, HttpStatus.OK);
-        }
-        Page<Product> products = productService.pagination(PageRequest.of(page, size, Sort.by(order)));
-        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @CrossOrigin
     @GetMapping("/quantity")
-    public int getQuantity(@RequestParam(required = false) String name,
-                                                     @RequestParam(required = false) double price,
-                                                     @RequestParam(required = false) String category) {
-        List<Product> le=new ArrayList<>();
-        if(!name.isEmpty()||!category.isEmpty()||Double.isNaN(price)){
-        System.out.println(productService);
-         le = productService.getQuantity(name,category,price);
+    public Long getQuantity(@RequestParam(required = false) String name,
+                            @RequestParam(required = false) String category,
+                            @RequestParam(required = false) String description,
+                            @RequestParam(required = false) String details) {
+        if (name != null && category != null) {
+            return productRepository.countByNameContainingAndCategoryContaining(name, category);
+        } else if (name != null) {
+            return productRepository.countByNameContaining(name);
+        } else if (category != null) {
+            return productRepository.countByCategoryContaining(category);
+        } else if (description != null) {
+            return productRepository.countByDescriptionContaining(description);
+        } else if (details != null) {
+            return productRepository.countByDetailsContaining(details);
+        }else {
+            return productRepository.count();
         }
-        else{
-            le = productService.getAllProducts();
-        }
-        return le.size();
     }
     @CrossOrigin
     @GetMapping("/noExistence")

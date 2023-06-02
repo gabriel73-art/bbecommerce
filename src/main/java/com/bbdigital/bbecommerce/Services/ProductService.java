@@ -70,12 +70,12 @@ public class ProductService {
     public Page<Product> allPagination(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
-    public Page<Product> paginationSearch(String name, String type, Pageable pageable) {
+   /* public Page<Product> paginationSearch(String name, String type, Pageable pageable) {
         return productRepository.findByProductName(name, type,pageable);
     }
     public List<Product> getQuantity(String name, String type,double price) {
         return productRepository.getQuantityProductName(name, type,price);
-    }
+    }*/
 
     public List<Product> getNoStock() {
         return productRepository.getNoExistenceProducts();

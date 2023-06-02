@@ -3,6 +3,7 @@ package com.bbdigital.bbecommerce.Controllers;
 import com.bbdigital.bbecommerce.Models.Product;
 import com.bbdigital.bbecommerce.Repositories.ProductRepository;
 import com.bbdigital.bbecommerce.Services.ProductService;
+import com.bbdigital.bbecommerce.common.payload.Specifications.ProductSpecifications;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +94,7 @@ public class ProductController {
     }
 
 
-    @GetMapping("/search")
+    /*@GetMapping("/search")
     public ResponseEntity<Page<Product>> buscarProductos(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String category,
@@ -116,28 +118,72 @@ public class ProductController {
         } else {
             return new ResponseEntity<>(productRepository.findAll(pageable),HttpStatus.OK);
         }
+    }*/
+
+    @GetMapping("/search")
+    public Page<Product> buscarProductos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String details,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Specification<Product> spec = Specification.where(null);
+        if (name != null) {
+            spec = spec.and(ProductSpecifications.containsName(name));
+        }
+        if (category != null) {
+            spec = spec.and(ProductSpecifications.containsCategory(category));
+        }
+        if (description != null) {
+            spec = spec.and(ProductSpecifications.containsDescription(description));
+        }
+        if (details != null) {
+            spec = spec.and(ProductSpecifications.containsDetails(details));
+        }
+        if (!spec.equals(Specification.where(null))) {
+            return productRepository.findAll(spec, pageable);
+        } else {
+            return productRepository.findAll(pageable);
+        }
     }
 
+    
     @CrossOrigin
     @GetMapping("/quantity")
-    public Long getQuantity(@RequestParam(required = false) String name,
-                            @RequestParam(required = false) String category,
-                            @RequestParam(required = false) String description,
-                            @RequestParam(required = false) String details) {
-        if (name != null && category != null) {
-            return productRepository.countByNameContainingAndCategoryContaining(name, category);
-        } else if (name != null) {
-            return productRepository.countByNameContaining(name);
-        } else if (category != null) {
-            return productRepository.countByCategoryContaining(category);
-        } else if (description != null) {
-            return productRepository.countByDescriptionContaining(description);
-        } else if (details != null) {
-            return productRepository.countByDetailsContaining(details);
-        }else {
+    public long getQuantity(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String details
+    ) {
+        Specification<Product> spec = Specification.where(null);
+
+        if (name != null) {
+            spec = spec.and(ProductSpecifications.containsName(name));
+        }
+
+        if (category != null) {
+            spec = spec.and(ProductSpecifications.containsCategory(category));
+        }
+
+        if (description != null) {
+            spec = spec.and(ProductSpecifications.containsDescription(description));
+        }
+
+        if (details != null) {
+            spec = spec.and(ProductSpecifications.containsDetails(details));
+        }
+
+        if (!spec.equals(Specification.where(null))) {
+            return productRepository.count(spec);
+        } else {
             return productRepository.count();
         }
     }
+
     @CrossOrigin
     @GetMapping("/noExistence")
     public ResponseEntity<List<Product>> getNonStockProducts() {

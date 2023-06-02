@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.*;
 
 @Component
-public class JwtUtils {
+public class
+JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${bbecommerce.app.jwtSecret}")

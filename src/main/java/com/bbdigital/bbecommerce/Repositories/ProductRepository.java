@@ -26,7 +26,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     long countByDescriptionContaining(String description);
     long countByDetailsContaining(String details);
 
-    
+
     @Query("select distinct p from Product p where p.stock=0")
     List<Product> getNoExistenceProducts();
 

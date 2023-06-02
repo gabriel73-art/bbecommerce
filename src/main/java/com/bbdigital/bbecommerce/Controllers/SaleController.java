@@ -4,6 +4,8 @@ import com.bbdigital.bbecommerce.Models.Product;
 import com.bbdigital.bbecommerce.Models.ProductSold;
 import com.bbdigital.bbecommerce.Services.ProductService;
 import com.bbdigital.bbecommerce.Services.ProductSoldService;
+import com.bbdigital.bbecommerce.Utils.Constants;
+import com.bbdigital.bbecommerce.common.payload.Response.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,9 @@ public class SaleController {
     @Transactional(readOnly = false, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseEntity<Object> createSale(@RequestParam("id") Long id) throws Exception {
         Product product=productService.getProductById(id);
+        if(product.getExistence()==false){
+            return new ResponseEntity<>(new ErrorResponse(Constants.INSUFFICIENT_PRODUCT_STOCK), HttpStatus.BAD_REQUEST);
+        }
         product.subtracExistence();
         ProductSold productSold=new ProductSold();
         productService.update(product.getId(),product);
